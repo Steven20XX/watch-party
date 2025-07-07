@@ -8,6 +8,31 @@
   <script defer src="https://cdn.jsdelivr.net/npm/@tailwindcss/forms"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    .star-svg.selected,
+    .star-svg.half {
+      color: #fbbf24;
+      filter: drop-shadow(0 0 4px #fbbf24aa);
+    }
+    .star-svg {
+      color: #d1d5db;
+      transition: color 0.2s, transform 0.15s;
+      position: relative;
+      z-index: 1;
+    }
+    .star-svg.half polygon {
+      clip-path: inset(0 50% 0 0);
+    }
+    .star-svg.half::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 50%;
+      background: #fbbf24;
+      z-index: 2;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 p-6 flex flex-col min-h-screen">
   <!-- Navbar dynamique -->
@@ -43,12 +68,22 @@
         <label class="block text-sm font-medium text-gray-700">Note personnelle</label>
         <div class="flex space-x-1">
           <template id="star-template">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6 text-gray-400 cursor-pointer hover:text-yellow-400">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z" />
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 class="w-8 h-8 transition-transform duration-150 transform hover:scale-125 cursor-pointer star-svg text-gray-300">
+              <polygon points="12,2 15,9 22,9.5 17,14.5 18.5,22 12,18 5.5,22 7,14.5 2,9.5 9,9"
+                fill="currentColor" stroke="#fbbf24" stroke-width="1"/>
             </svg>
           </template>
           <div id="stars" class="flex"></div>
         </div>
+      </div>
+
+      <!-- Ajoute ce bloc dans le formulaire, par exemple après la note -->
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700">Catégories (tags)</label>
+        <input type="text" id="new-category" class="w-full p-2 border rounded-lg mb-2" placeholder="Ajouter une catégorie (ex: Action)">
+        <div id="categories-list" class="flex flex-wrap gap-2"></div>
       </div>
 
       <div class="mt-6 text-center">
@@ -87,31 +122,51 @@
     updateNavbar();
   </script>
   <script>
-    // Gestion des étoiles
+    // Gestion des étoiles avec demi-étoiles
     const starsContainer = document.getElementById("stars");
     const starTemplate = document.getElementById("star-template");
-    let selectedRating = 0;
+    let selectedRating = 0; // 0, 0.5, 1, 1.5, ..., 5
+
+    // Nettoie le container
+    starsContainer.innerHTML = "";
+
     for (let i = 1; i <= 5; i++) {
       const star = starTemplate.content.cloneNode(true).children[0];
       star.dataset.rating = i;
-      star.addEventListener("click", () => {
-        selectedRating = i;
-        updateStars();
+
+      // Gestion du clic pour demi-étoile ou étoile pleine
+      star.addEventListener("mousemove", (e) => {
+        const rect = star.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const isHalf = x < rect.width / 2;
+        updateStars(i - (isHalf ? 0.5 : 0));
+      });
+      star.addEventListener("mouseleave", () => {
+        updateStars(selectedRating);
+      });
+      star.addEventListener("click", (e) => {
+        const rect = star.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const isHalf = x < rect.width / 2;
+        selectedRating = i - (isHalf ? 0.5 : 0);
+        updateStars(selectedRating);
       });
       starsContainer.appendChild(star);
     }
-    function updateStars() {
-      starsContainer.querySelectorAll("svg").forEach(star => {
-        const rating = parseInt(star.dataset.rating);
-        if (rating <= selectedRating) {
-          star.classList.add("text-yellow-400");
-          star.classList.remove("text-gray-400");
-        } else {
-          star.classList.add("text-gray-400");
-          star.classList.remove("text-yellow-400");
+
+    // Affiche les étoiles selon la note (avec demi)
+    function updateStars(rating = selectedRating) {
+      starsContainer.querySelectorAll("svg").forEach((star, idx) => {
+        const starValue = idx + 1;
+        star.classList.remove("selected", "half");
+        if (rating >= starValue) {
+          star.classList.add("selected");
+        } else if (rating >= starValue - 0.5) {
+          star.classList.add("half");
         }
       });
     }
+    updateStars();
   </script>
   <script>
     // TMDB API
@@ -151,6 +206,14 @@
         : "";
       suggestionsDiv.innerHTML = "";
       searchInput.value = movie.title;
+
+      // Récupère les genres depuis TMDB
+      const response = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}?api_key=${TMDB_API_KEY}`);
+      const details = await response.json();
+      if (details.genres) {
+        selectedCategories = details.genres.map(g => g.name);
+        renderCategories();
+      }
     }
   </script>
   <script>
@@ -180,25 +243,89 @@
       }
 
       // Ajoute le film dans la table movies
-      const { error } = await supabase
+      const { data: movieData, error } = await supabase
         .from("movies")
         .insert([{
           user_id: session.user.id,
           tmdb_id: selectedMovie.id,
           note: selectedRating
-        }]);
+        }])
+        .select()
+        .single();
 
       if (error) {
         addMessage.textContent = "Erreur lors de l'ajout : " + error.message;
         addMessage.className = "text-red-600";
-      } else {
-        addMessage.textContent = "Film ajouté à votre liste !";
-        addMessage.className = "text-green-600";
-        setTimeout(() => {
-          window.location.href = "myList.html";
-        }, 1200);
+        return;
+      }
+
+      // Ajoute les catégories (création si besoin)
+      for (const cat of selectedCategories) {
+        // 1. Vérifie si la catégorie existe déjà
+        let { data: existingCat } = await supabase
+          .from("categories")
+          .select("*")
+          .eq("name", cat)
+          .single();
+
+        // 2. Si non, crée-la
+        if (!existingCat) {
+          const { data: newCat } = await supabase
+            .from("categories")
+            .insert([{ name: cat }])
+            .select()
+            .single();
+          existingCat = newCat;
+        }
+
+        // 3. Lie la catégorie au film
+        await supabase
+          .from("movie_categories")
+          .insert([{ movie_id: movieData.id, category_id: existingCat.id }]);
+      }
+
+      addMessage.textContent = "Film ajouté à votre liste !";
+      addMessage.className = "text-green-600";
+      setTimeout(() => {
+        window.location.href = "myList.html";
+      }, 1200);
+    });
+  </script>
+  <script>
+    let selectedCategories = [];
+
+    const newCategoryInput = document.getElementById("new-category");
+    const categoriesListDiv = document.getElementById("categories-list");
+
+    newCategoryInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && newCategoryInput.value.trim()) {
+        e.preventDefault();
+        const cat = newCategoryInput.value.trim();
+        if (!selectedCategories.includes(cat)) {
+          selectedCategories.push(cat);
+          renderCategories();
+        }
+        newCategoryInput.value = "";
       }
     });
+
+    function renderCategories() {
+      categoriesListDiv.innerHTML = "";
+      selectedCategories.forEach(cat => {
+        const tag = document.createElement("span");
+        tag.className = "bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs flex items-center";
+        tag.textContent = cat;
+        const remove = document.createElement("button");
+        remove.textContent = "×";
+        remove.className = "ml-1 text-red-500";
+        remove.onclick = () => {
+          selectedCategories = selectedCategories.filter(c => c !== cat);
+          renderCategories();
+        };
+        tag.appendChild(remove);
+        categoriesListDiv.appendChild(tag);
+      });
+    }
   </script>
 </body>
 </html>

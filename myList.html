@@ -81,9 +81,35 @@
     function renderStars(note) {
       let stars = "";
       for (let i = 1; i <= 5; i++) {
-        stars += `<svg class="inline w-5 h-5 ${i <= note ? 'text-yellow-400' : 'text-gray-300'}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/></svg>`;
+        if (note >= i) {
+          // Pleine étoile
+          stars += `<svg class="inline w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/></svg>`;
+        } else if (note >= i - 0.5) {
+          // Demi-étoile
+          stars += `<svg class="inline w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+            <defs>
+              <linearGradient id="half">
+                <stop offset="50%" stop-color="currentColor"/>
+                <stop offset="50%" stop-color="#d1d5db"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#half)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/>
+          </svg>`;
+        } else {
+          // Vide
+          stars += `<svg class="inline w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/></svg>`;
+        }
       }
       return stars;
+    }
+
+    async function getCategoriesForMovie(movie_id) {
+      const { data, error } = await supabase
+        .from("movie_categories")
+        .select("categories(name)")
+        .eq("movie_id", movie_id);
+      if (error || !data) return [];
+      return data.map(row => row.categories.name);
     }
 
     async function displayMovies() {
@@ -92,12 +118,16 @@
       container.innerHTML = "";
       for (const movie of movies) {
         const details = await getMovieDetails(movie.tmdb_id);
+        const categories = await getCategoriesForMovie(movie.id);
         container.innerHTML += `
           <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
             <img src="https://image.tmdb.org/t/p/w300${details.poster_path}" alt="${details.title}" class="w-40 rounded mb-2">
             <h2 class="text-lg font-bold mb-1 text-center">${details.title}</h2>
             <p class="text-gray-600 text-sm mb-2 text-center">${details.overview}</p>
             <div class="mb-2">${renderStars(movie.note)}</div>
+            <div class="flex flex-wrap gap-2 mb-2">
+              ${categories.map(cat => `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">${cat}</span>`).join("")}
+            </div>
           </div>
         `;
       }
