@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inscription</title>
+  <title>Connexion</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
   <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
-    <h2 class="text-2xl font-bold mb-6 text-center">Créer un compte</h2>
-    <form id="register-form" class="space-y-4">
+    <h2 class="text-2xl font-bold mb-6 text-center">Connexion</h2>
+    <form id="login-form" class="space-y-4">
       <div>
         <label for="username" class="block mb-1 font-medium">Nom d'utilisateur</label>
         <input type="text" id="username" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -20,7 +19,7 @@
         <label for="password" class="block mb-1 font-medium">Mot de passe</label>
         <input type="password" id="password" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">S'inscrire</button>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Se connecter</button>
     </form>
     <p id="message" class="text-center mt-4 text-sm"></p>
   </div>
@@ -30,9 +29,9 @@
     const SUPABASE_URL = "https://qiigivhuzbpurtnbywlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpaWdpdmh1emJwdXJ0bmJ5d2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5MDkyNTMsImV4cCI6MjA2NzQ4NTI1M30.VFL-cS71h6nE7mn9a4btAifHflLT7HQxVSBWOSsoFmI";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('register-form');
+    const form = document.getElementById('login-form');
     const message = document.getElementById('message');
 
     form.addEventListener('submit', async (e) => {
@@ -40,7 +39,7 @@
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
-      const { error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signInWithPassword({
         email: username,
         password: password
       });
@@ -49,9 +48,9 @@
         message.textContent = error.message;
         message.className = "text-red-600 text-center mt-4";
       } else {
-        message.textContent = "Inscription réussie !";
+        message.textContent = "Connexion réussie !";
         message.className = "text-green-600 text-center mt-4";
-        window.location.href = "login.html";
+        window.location.href = "index.html";
       }
     });
   </script>
