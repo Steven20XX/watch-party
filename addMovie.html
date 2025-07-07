@@ -34,20 +34,20 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 p-6 flex flex-col min-h-screen">
+<body class="bg-gray-100 p-2 flex flex-col min-h-screen">
   <!-- Navbar dynamique -->
-  <nav class="bg-white shadow mb-8">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-      <a href="myList.html" class="text-xl font-bold text-blue-600">🎬 Watch Party</a>
-      <div id="navbar-actions" class="flex items-center space-x-4"></div>
+  <nav class="bg-white shadow mb-4 md:mb-8">
+    <div class="max-w-4xl mx-auto px-2 md:px-4 py-3 flex flex-col md:flex-row items-center md:justify-between gap-2 md:gap-0">
+      <a href="myList.html" class="text-lg md:text-xl font-bold text-blue-600 mb-2 md:mb-0">🎬 Watch Party</a>
+      <div id="navbar-actions" class="flex flex-col md:flex-row w-full md:w-auto justify-center items-center gap-2 md:gap-4"></div>
     </div>
   </nav>
   <div class="flex-1">
-    <div class="max-w-xl mx-auto bg-white shadow-md rounded-2xl p-6">
-      <h1 class="text-2xl font-bold mb-4">Ajouter un film à votre liste</h1>
+    <div class="max-w-xl mx-auto bg-white shadow-md rounded-2xl p-4 md:p-6">
+      <h1 class="text-xl md:text-2xl font-bold mb-4 text-center">Ajouter un film à votre liste</h1>
 
       <label class="block mb-2 text-sm font-medium text-gray-700">Rechercher un film</label>
-      <input type="text" id="search" class="w-full p-2 border rounded-lg" placeholder="Ex: Inception">
+      <input type="text" id="search" class="w-full p-2 border rounded-lg text-base" placeholder="Ex: Inception">
       <div id="suggestions" class="bg-white border rounded-lg mt-1 shadow-md"></div>
 
       <div class="mt-4">
@@ -61,7 +61,7 @@
       </div>
 
       <div class="mt-4">
-        <img id="poster" class="w-48 rounded shadow" alt="Affiche du film">
+        <img id="poster" class="w-full max-w-xs mx-auto rounded shadow mt-4" alt="Affiche du film">
       </div>
 
       <div class="mt-4">
@@ -87,8 +87,8 @@
       </div>
 
       <div class="mt-6 text-center">
-        <button id="add-to-list" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Ajouter à ma liste</button>
-        <p id="add-message" class="mt-2 text-sm"></p>
+        <button id="add-to-list" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-base">Ajouter à ma liste</button>
+        <p id="add-message" class="mt-2 text-sm text-center"></p>
       </div>
     </div>
   </div>
