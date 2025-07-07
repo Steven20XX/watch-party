@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ma liste de films</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-100 p-6 flex flex-col min-h-screen">
+  <!-- Navbar dynamique -->
+  <nav class="bg-white shadow mb-8">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+      <a href="myList.html" class="text-xl font-bold text-blue-600">🎬 Watch Party</a>
+      <div id="navbar-actions" class="flex items-center space-x-4"></div>
+    </div>
+  </nav>
+  <div class="flex-1">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-6 text-center">Ma liste de films</h1>
+      <div id="movies-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <p id="message" class="text-center mt-4 text-sm"></p>
+    </div>
+  </div>
+  <script>
+    // Navbar dynamique
+    const SUPABASE_URL = "https://qiigivhuzbpurtnbywlf.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpaWdpdmh1emJwdXJ0bmJ5d2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5MDkyNTMsImV4cCI6MjA2NzQ4NTI1M30.VFL-cS71h6nE7mn9a4btAifHflLT7HQxVSBWOSsoFmI";
+    const TMDB_API_KEY = "0255536b6c2bd95d5239e8c92c23c7aa";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function updateNavbar() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const navbar = document.getElementById("navbar-actions");
+      navbar.innerHTML = "";
+      if (session) {
+        navbar.innerHTML = `
+          <a href="addMovie.html" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">+ Ajouter un film</a>
+          <a href="myList.html" class="text-blue-600 hover:underline">Ma liste</a>
+          <button id="logout-btn" class="text-gray-700 hover:underline">Déconnexion</button>
+        `;
+        document.getElementById("logout-btn").onclick = async () => {
+          await supabase.auth.signOut();
+          window.location.href = "login.html";
+        };
+      } else {
+        navbar.innerHTML = `
+          <a href="login.html" class="text-blue-600 hover:underline">Se connecter</a>
+          <a href="register.html" class="text-blue-600 hover:underline">Créer un compte</a>
+        `;
+      }
+    }
+    updateNavbar();
+
+    async function fetchMyMovies() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        document.getElementById("message").textContent = "Vous devez être connecté.";
+        return [];
+      }
+      const { data, error } = await supabase
+        .from("movies")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+      if (error) {
+        document.getElementById("message").textContent = "Erreur lors du chargement.";
+        return [];
+      }
+      return data;
+    }
+
+    async function getMovieDetails(tmdb_id) {
+      const response = await axios.get(`https://api.themoviedb.org/3/movie/${tmdb_id}`, {
+        params: { api_key: TMDB_API_KEY }
+      });
+      return response.data;
+    }
+
+    function renderStars(note) {
+      let stars = "";
+      for (let i = 1; i <= 5; i++) {
+        stars += `<svg class="inline w-5 h-5 ${i <= note ? 'text-yellow-400' : 'text-gray-300'}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/></svg>`;
+      }
+      return stars;
+    }
+
+    async function displayMovies() {
+      const movies = await fetchMyMovies();
+      const container = document.getElementById("movies-list");
+      container.innerHTML = "";
+      for (const movie of movies) {
+        const details = await getMovieDetails(movie.tmdb_id);
+        container.innerHTML += `
+          <div class="bg-white rounded-xl shadow p-4 flex flex-col items-center">
+            <img src="https://image.tmdb.org/t/p/w300${details.poster_path}" alt="${details.title}" class="w-40 rounded mb-2">
+            <h2 class="text-lg font-bold mb-1 text-center">${details.title}</h2>
+            <p class="text-gray-600 text-sm mb-2 text-center">${details.overview}</p>
+            <div class="mb-2">${renderStars(movie.note)}</div>
+          </div>
+        `;
+      }
+      if (movies.length === 0) {
+        document.getElementById("message").textContent = "Aucun film dans votre liste.";
+      }
+    }
+
+    displayMovies();
+  </script>
+</body>
+</html>
