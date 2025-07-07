@@ -42,7 +42,7 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password
       });
@@ -51,10 +51,19 @@
         message.textContent = error.message;
         message.className = "text-red-600 text-center mt-4";
       } else {
-        message.textContent = "Inscription réussie ! Vérifiez votre boîte mail pour valider votre compte.";
-        message.className = "text-green-600 text-center mt-4";
-        setTimeout(() => {
-          window.location.href = "login.html";
+        message.textContent = "Inscription réussie ! Un email de confirmation vient de vous être envoyé. Veuillez cliquer sur le lien dans cet email pour activer votre compte.";
+        message.className = "text-blue-600 text-center mt-4";
+        // Vérifie toutes les 2 secondes si l'email a été confirmé
+        const interval = setInterval(async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session && session.user && session.user.email_confirmed_at) {
+            clearInterval(interval);
+            message.textContent = "Email confirmé ! Redirection...";
+            message.className = "text-green-600 text-center mt-4";
+            setTimeout(() => {
+              window.location.href = "myList.html";
+            }, 1000);
+          }
         }, 2000);
       }
     });
