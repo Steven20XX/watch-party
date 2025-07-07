@@ -30,28 +30,29 @@
     const TMDB_API_KEY = "0255536b6c2bd95d5239e8c92c23c7aa";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function updateNavbar() {
-      const { data: { session } } = await supabase.auth.getSession();
-      const navbar = document.getElementById("navbar-actions");
-      navbar.innerHTML = "";
-      if (session) {
-        navbar.innerHTML = `
-          <a href="addMovie.html" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">+ Ajouter un film</a>
-          <a href="myList.html" class="text-blue-600 hover:underline">Ma liste</a>
-          <button id="logout-btn" class="text-gray-700 hover:underline">Déconnexion</button>
-        `;
-        document.getElementById("logout-btn").onclick = async () => {
-          await supabase.auth.signOut();
-          window.location.href = "login.html";
-        };
-      } else {
-        navbar.innerHTML = `
-          <a href="login.html" class="text-blue-600 hover:underline">Se connecter</a>
-          <a href="register.html" class="text-blue-600 hover:underline">Créer un compte</a>
-        `;
-      }
-    }
-    updateNavbar();
+async function updateNavbar() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const navbar = document.getElementById("navbar-actions");
+  navbar.innerHTML = "";
+  if (session) {
+    navbar.innerHTML = `
+      <a href="addMovie.html" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">+ Ajouter un film</a>
+      <a href="myList.html" class="text-blue-600 hover:underline">Ma liste</a>
+      <a href="askAI.html" class="text-blue-600 hover:underline">Demander à l'IA</a>
+      <button id="logout-btn" class="text-gray-700 hover:underline">Déconnexion</button>
+    `;
+    document.getElementById("logout-btn").onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    };
+  } else {
+    navbar.innerHTML = `
+      <a href="login.html" class="text-blue-600 hover:underline">Se connecter</a>
+      <a href="register.html" class="text-blue-600 hover:underline">Créer un compte</a>
+    `;
+  }
+}
+updateNavbar();
 
     async function fetchMyMovies() {
       const { data: { session } } = await supabase.auth.getSession();
