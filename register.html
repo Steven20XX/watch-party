@@ -41,7 +41,7 @@
       const password = document.getElementById('password').value;
 
       const { error } = await supabase.auth.signUp({
-        email: username,
+        username: username,
         password: password
       });
 
