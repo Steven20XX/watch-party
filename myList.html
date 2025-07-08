@@ -24,35 +24,34 @@
     </div>
   </div>
   <script>
-    // Navbar dynamique
     const SUPABASE_URL = "https://qiigivhuzbpurtnbywlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpaWdpdmh1emJwdXJ0bmJ5d2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5MDkyNTMsImV4cCI6MjA2NzQ4NTI1M30.VFL-cS71h6nE7mn9a4btAifHflLT7HQxVSBWOSsoFmI";
     const TMDB_API_KEY = "0255536b6c2bd95d5239e8c92c23c7aa";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-async function updateNavbar() {
-  const { data: { session } } = await supabase.auth.getSession();
-  const navbar = document.getElementById("navbar-actions");
-  navbar.innerHTML = "";
-  if (session) {
-    navbar.innerHTML = `
-      <a href="addMovie.html" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">+ Ajouter un film</a>
-      <a href="myList.html" class="text-blue-600 hover:underline">Ma liste</a>
-      <a href="askAI.html" class="text-blue-600 hover:underline">Demander à l'IA</a>
-      <button id="logout-btn" class="text-gray-700 hover:underline">Déconnexion</button>
-    `;
-    document.getElementById("logout-btn").onclick = async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    };
-  } else {
-    navbar.innerHTML = `
-      <a href="login.html" class="text-blue-600 hover:underline">Se connecter</a>
-      <a href="register.html" class="text-blue-600 hover:underline">Créer un compte</a>
-    `;
-  }
-}
-updateNavbar();
+    async function updateNavbar() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const navbar = document.getElementById("navbar-actions");
+      navbar.innerHTML = "";
+      if (session) {
+        navbar.innerHTML = `
+          <a href="addMovie.html" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">+ Ajouter un film</a>
+          <a href="myList.html" class="text-blue-600 hover:underline">Ma liste</a>
+          <a href="askAI.html" class="text-blue-600 hover:underline">Demander à l'IA</a>
+          <button id="logout-btn" class="text-gray-700 hover:underline">Déconnexion</button>
+        `;
+        document.getElementById("logout-btn").onclick = async () => {
+          await supabase.auth.signOut();
+          window.location.href = "login.html";
+        };
+      } else {
+        navbar.innerHTML = `
+          <a href="login.html" class="text-blue-600 hover:underline">Se connecter</a>
+          <a href="register.html" class="text-blue-600 hover:underline">Créer un compte</a>
+        `;
+      }
+    }
+    updateNavbar();
 
     async function fetchMyMovies() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -83,10 +82,8 @@ updateNavbar();
       let stars = "";
       for (let i = 1; i <= 5; i++) {
         if (note >= i) {
-          // Pleine étoile
           stars += `<svg class="inline w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/></svg>`;
         } else if (note >= i - 0.5) {
-          // Demi-étoile
           stars += `<svg class="inline w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
             <defs>
               <linearGradient id="half">
@@ -97,7 +94,6 @@ updateNavbar();
             <path fill="url(#half)" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/>
           </svg>`;
         } else {
-          // Vide
           stars += `<svg class="inline w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.974a1 1 0 00.95.69h4.18c.969 0 1.371 1.24.588 1.81l-3.39 2.462a1 1 0 00-.364 1.118l1.287 3.974c.3.921-.755 1.688-1.54 1.118l-3.39-2.462a1 1 0 00-1.176 0l-3.39 2.462c-.784.57-1.838-.197-1.539-1.118l1.287-3.974a1 1 0 00-.364-1.118L2.34 9.401c-.783-.57-.38-1.81.588-1.81h4.18a1 1 0 00.95-.69l1.286-3.974z"/></svg>`;
         }
       }
@@ -136,43 +132,6 @@ updateNavbar();
         document.getElementById("message").textContent = "Aucun film dans votre liste.";
       }
     }
-
-    let selectedTmdbId = null;
-
-    async function selectMovie(movie) {
-      document.getElementById("title").value = movie.title || "";
-      document.getElementById("description").value = movie.overview || "";
-      document.getElementById("poster").src = movie.poster_path
-        ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-        : "";
-      suggestionsDiv.innerHTML = "";
-      searchInput.value = movie.title;
-      selectedTmdbId = movie.id; // <-- Ajoute cette ligne
-
-      // ...reste du code...
-    }
-
-    // Ajout du film
-document.getElementById("add-to-list").addEventListener("click", async () => {
-  // ...
-  if (!selectedTmdbId) {
-    addMessage.textContent = "Veuillez sélectionner un film depuis la recherche.";
-    addMessage.className = "text-red-600";
-    return;
-  }
-
-  // Ajoute le film dans la table movies
-  const { data: movieData, error } = await supabase
-    .from("movies")
-    .insert([{
-      user_id: session.user.id,
-      tmdb_id: selectedTmdbId, // <-- Utilise l'ID sélectionné
-      note: selectedRating
-    }])
-    .select()
-    .single();
-  // ...
-});
 
     displayMovies();
   </script>
