@@ -2,74 +2,141 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inscription</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen px-2">
+<body class="bg-gray-100 flex flex-col min-h-screen px-2">
+  <!-- Navbar dynamique -->
   <nav class="bg-white shadow mb-4 md:mb-8">
     <div class="max-w-4xl mx-auto px-2 md:px-4 py-3 flex flex-col md:flex-row items-center md:justify-between gap-2 md:gap-0">
       <a href="myList.html" class="text-lg md:text-xl font-bold text-blue-600 mb-2 md:mb-0">🎬 Watch Party</a>
       <div id="navbar-actions" class="flex flex-col md:flex-row w-full md:w-auto justify-center items-center gap-2 md:gap-4"></div>
     </div>
   </nav>
-  <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-2xl shadow-lg mx-auto">
-    <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center">Inscription</h2>
-    <form id="register-form" class="space-y-3 md:space-y-4">
-      <div>
-        <label for="email" class="block mb-1 font-medium text-sm md:text-base">Adresse e-mail</label>
-        <input type="email" id="email" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
+
+  <!-- Formulaire d'inscription -->
+  <div class="flex-1 flex items-center justify-center">
+    <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+      <h2 class="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center">Créer un compte</h2>
+
+      <form id="register-form" class="space-y-3 md:space-y-4">
+        <div>
+          <label for="email" class="block mb-1 font-medium text-sm md:text-base">Adresse e-mail</label>
+          <input type="email" id="email" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
+        </div>
+        <div>
+          <label for="password" class="block mb-1 font-medium text-sm md:text-base">Mot de passe</label>
+          <input type="password" id="password" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-base font-semibold">S'inscrire</button>
+      </form>
+
+      <!-- OU séparateur -->
+      <div class="my-4 flex items-center gap-2">
+        <hr class="flex-1 border-gray-300" />
+        <span class="text-gray-500 text-sm">OU</span>
+        <hr class="flex-1 border-gray-300" />
       </div>
-      <div>
-        <label for="password" class="block mb-1 font-medium text-sm md:text-base">Mot de passe</label>
-        <input type="password" id="password" required class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base" />
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-base font-semibold">S'inscrire</button>
-    </form>
-    <p id="message" class="text-center mt-4 text-sm"></p>
-    <p class="text-center mt-2 text-sm">
-      Déjà inscrit ? <a href="login.html" class="text-blue-600 hover:underline">Connexion</a>
-    </p>
+
+      <!-- Bouton Google -->
+      <button id="google-register" class="w-full bg-white text-gray-800 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition text-base font-medium flex items-center justify-center gap-2">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5" />
+        Continuer avec Google
+      </button>
+
+      <p id="message" class="text-center mt-4 text-sm"></p>
+      <p class="text-center mt-2 text-sm">
+        Déjà inscrit ? <a href="login.html" class="text-blue-600 hover:underline">Connexion</a>
+      </p>
+    </div>
   </div>
+
+  <!-- Script Supabase -->
   <script>
-    // Configuration Supabase
     const SUPABASE_URL = "https://qiigivhuzbpurtnbywlf.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpaWdpdmh1emJwdXJ0bmJ5d2xmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE5MDkyNTMsImV4cCI6MjA2NzQ4NTI1M30.VFL-cS71h6nE7mn9a4btAifHflLT7HQxVSBWOSsoFmI";
-
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const form = document.getElementById('register-form');
-    const message = document.getElementById('message');
+    // Navbar dynamique
+    async function updateNavbar() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const navbar = document.getElementById("navbar-actions");
+      navbar.innerHTML = "";
+      if (session) {
+        navbar.innerHTML = `
+          <a href="addMovie.html" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">+ Ajouter un film</a>
+          <a href="myList.html" class="text-blue-600 hover:underline">Ma liste</a>
+          <a href="askAI.html" class="text-blue-600 hover:underline">Demander à l'IA</a>
+          <button id="logout-btn" class="text-gray-700 hover:underline">Déconnexion</button>
+        `;
+        document.getElementById("logout-btn").onclick = async () => {
+          await supabase.auth.signOut();
+          window.location.href = "login.html";
+        };
+      } else {
+        navbar.innerHTML = `
+          <a href="login.html" class="text-blue-600 hover:underline">Se connecter</a>
+          <a href="register.html" class="text-blue-600 hover:underline">Créer un compte</a>
+        `;
+      }
+    }
+    updateNavbar();
 
-    form.addEventListener('submit', async (e) => {
+    // Formulaire d'inscription
+    const form = document.getElementById("register-form");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-      const { data, error } = await supabase.auth.signUp({
-        email: email,
-        password: password
+      const { error } = await supabase.auth.signUp({ email, password });
+
+      if (error) {
+        if (error.message.toLowerCase().includes("user already registered") || error.message.toLowerCase().includes("email")) {
+          message.textContent = "Cette adresse e-mail est déjà utilisée.";
+        } else {
+          message.textContent = error.message;
+        }
+        message.className = "text-red-600 text-center mt-4";
+      } else {
+        message.textContent = "Inscription réussie ! Vérifiez votre boîte mail.";
+        message.className = "text-blue-600 text-center mt-4";
+
+        const checkConfirmed = setInterval(async () => {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.email_confirmed_at) {
+            clearInterval(checkConfirmed);
+            message.textContent = "Email confirmé ! Redirection...";
+            message.className = "text-green-600 text-center mt-4";
+            setTimeout(() => window.location.href = "myList.html", 1000);
+          }
+        }, 3000);
+      }
+    });
+
+    // Connexion avec Google
+    document.getElementById("google-register").addEventListener("click", async () => {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + "/myList.html"
+        }
       });
 
       if (error) {
-        message.textContent = error.message;
+        message.textContent = "Échec de la connexion avec Google.";
         message.className = "text-red-600 text-center mt-4";
-      } else {
-        message.textContent = "Inscription réussie ! Un email de confirmation vient de vous être envoyé. Veuillez cliquer sur le lien dans cet email pour activer votre compte.";
-        message.className = "text-blue-600 text-center mt-4";
-        // Vérifie toutes les 2 secondes si l'email a été confirmé
-        const interval = setInterval(async () => {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session && session.user && session.user.email_confirmed_at) {
-            clearInterval(interval);
-            message.textContent = "Email confirmé ! Redirection...";
-            message.className = "text-green-600 text-center mt-4";
-            setTimeout(() => {
-              window.location.href = "myList.html";
-            }, 1000);
-          }
-        }, 2000);
+      }
+    });
+
+    // Redirection si déjà connecté
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        window.location.href = "myList.html";
       }
     });
   </script>
