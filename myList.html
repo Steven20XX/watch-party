@@ -137,6 +137,43 @@ updateNavbar();
       }
     }
 
+    let selectedTmdbId = null;
+
+    async function selectMovie(movie) {
+      document.getElementById("title").value = movie.title || "";
+      document.getElementById("description").value = movie.overview || "";
+      document.getElementById("poster").src = movie.poster_path
+        ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+        : "";
+      suggestionsDiv.innerHTML = "";
+      searchInput.value = movie.title;
+      selectedTmdbId = movie.id; // <-- Ajoute cette ligne
+
+      // ...reste du code...
+    }
+
+    // Ajout du film
+document.getElementById("add-to-list").addEventListener("click", async () => {
+  // ...
+  if (!selectedTmdbId) {
+    addMessage.textContent = "Veuillez sélectionner un film depuis la recherche.";
+    addMessage.className = "text-red-600";
+    return;
+  }
+
+  // Ajoute le film dans la table movies
+  const { data: movieData, error } = await supabase
+    .from("movies")
+    .insert([{
+      user_id: session.user.id,
+      tmdb_id: selectedTmdbId, // <-- Utilise l'ID sélectionné
+      note: selectedRating
+    }])
+    .select()
+    .single();
+  // ...
+});
+
     displayMovies();
   </script>
 </body>

@@ -81,7 +81,12 @@
 
       <!-- Ajoute ce bloc dans le formulaire, par exemple après la note -->
       <div class="mt-4">
-        <label class="block text-sm font-medium text-gray-700">Catégories (tags)</label>
+        <label class="block text-sm font-medium text-gray-700">
+          Catégories (tags)
+          <span class="block text-xs text-gray-500 font-normal mt-1">
+            Appuyez sur <span class="font-semibold">Entrée</span> pour ajouter une catégorie.
+          </span>
+        </label>
         <input type="text" id="new-category" class="w-full p-2 border rounded-lg mb-2" placeholder="Ajouter une catégorie (ex: Action)">
         <div id="categories-list" class="flex flex-wrap gap-2"></div>
       </div>
